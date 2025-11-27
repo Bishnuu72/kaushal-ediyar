@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaushal Ediyar - Products</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .header-info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 0;
+    }
+    .profile-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border: 6px solid white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .product-card img {
+      height: 250px;
+      object-fit: cover;
+    }
+    @media (max-width: 768px) {
+      .profile-img { width: 120px; height: 120px; }
+      .header-info h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Owner Header (Same as Admin) -->
+  <div class="header-info">
+    <div class="container">
+      <div class="row align-items-center text-center text-md-start">
+        <div class="col-md-3 mb-4 mb-md-0">
+          <img src="../assets/kaushal.jpg" alt="Kaushal Ediyar" class="rounded-circle profile-img mx-auto d-block">
+        </div>
+        <div class="col-md-9">
+          <h1 class="display-5 fw-bold mb-3">Kaushal Ediyar</h1>
+          <p class="lead mb-2"><i class="bi bi-envelope"></i> kaushalediyar@gmail.com</p>
+          <p class="lead mb-2"><i class="bi bi-telephone"></i> 9825388045</p>
+          <p class="lead mb-0"><i class="bi bi-geo-alt"></i> Itahari, Nepal</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <div class="container my-5">
+    <h2 class="text-center mb-5 display-6">My Products</h2>
+
+    <% if (products.length === 0) { %>
+      <div class="text-center py-5">
+        <p class="text-muted fs-4">No products added yet.</p>
+      </div>
+    <% } else { %>
+      <div class="row g-4">
+        <% products.forEach(product => { %>
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-lg border-0 product-card">
+              <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-primary fw-bold"><%= product.name %></h5>
+                <p class="card-text flex-grow-1 text-muted"><%= product.description %></p>
+                <div class="mt-auto">
+                  <h4 class="text-success fw-bold">$<%= parseFloat(product.price).toFixed(2) %></h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="text-center mt-5">
+      <small class="text-muted">© 2025 Kaushal Ediyar. All rights reserved.</small>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
