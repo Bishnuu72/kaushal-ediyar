@@ -3,14 +3,22 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const multer = require('multer');
-const bcrypt = require('bcrypt');
-const path = require('path');
 const app = express();
 
-// MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB Atlas Connected'))
+  .then(() => console.log('MongoDB Connected Successfully'))
   .catch(err => console.log(err));
+
+// Owner Schema (now includes hero background)
+const ownerSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  address: String,
+  photo: String,
+  heroBg: { type: String, default: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80" }
+});
+const Owner = mongoose.model('Owner', ownerSchema);
 
 // Product Schema
 const productSchema = new mongoose.Schema({
@@ -21,105 +29,102 @@ const productSchema = new mongoose.Schema({
 });
 const Product = mongoose.model('Product', productSchema);
 
-// Middleware
+// Create default owner if not exists
+Owner.findOne().then(async (owner) => {
+  if (!owner) {
+    await new Owner({
+      name: "Kaushal Ediyar",
+      email: "kaushal.ediyar@gmail.com",
+      phone: "+91 98765 43210",
+      address: "Surat, Gujarat, India",
+      photo: "https://i.ibb.co/0jY7Z7K/kaushal-photo.jpg"
+    }).save();
+    console.log("Default owner created");
+  }
+});
+
 app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
-app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
 
-// Multer for image upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-const upload = multer({ storage });
+const upload = multer({ dest: 'uploads/' });
 
-// Auth Middleware
+// Auth
 const isAuth = (req, res, next) => {
-  if (req.session.isAuth) next();
-  else res.redirect('/login');
+  if (req.session.isAuth) return next();
+  res.redirect('/login');
 };
 
 // Routes
-
-// 1. Login Page
-app.get('/login', (req, res) => {
-  res.render('login', { error: null });
+app.get('/', async (req, res) => {
+  const [products, owner] = await Promise.all([Product.find(), Owner.findOne()]);
+  res.render('public', { products, owner });
 });
 
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (username === process.env.ADMIN_USERNAME && 
-      await bcrypt.compare(password, await bcrypt.hash(process.env.ADMIN_PASSWORD, 10))) {
+app.get('/login', (req, res) => res.render('login', { error: null }));
+
+app.post('/login', (req, res) => {
+  if (req.body.username === "Kaushal" && req.body.password === "kaushal123") {
     req.session.isAuth = true;
     return res.redirect('/admin');
   }
-  res.render('login', { error: 'Invalid credentials' });
+  res.render('login', { error: "Wrong username or password" });
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
-});
+app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
 
-// 2. Public View Page (Anyone can see)
-app.get('/', async (req, res) => {
-  const products = await Product.find();
-  res.render('public', { products });
-});
-
-// 3. Admin Dashboard (Full CRUD - Protected)
 app.get('/admin', isAuth, async (req, res) => {
-  const products = await Product.find();
-  res.render('admin', { 
-    products, 
-    adminName: "Kaushal Ediyar",
-    email: "kaushalediyar@gmail.com",
-    phone: "9825388045",
-    address: "Itahari, Nepal"
-  });
+  const [products, owner] = await Promise.all([Product.find(), Owner.findOne()]);
+  res.render('admin', { products, owner });
 });
 
-// Add Product
+// CRUD Routes
 app.post('/admin/add', isAuth, upload.single('image'), async (req, res) => {
-  const { name, price, description } = req.body;
-  const newProduct = new Product({
-    name,
-    price,
-    description,
-    image: '/uploads/' + req.file.filename
-  });
-  await newProduct.save();
-  res.redirect('/admin');
-});
-
-// Update Product
-app.post('/admin/update/:id', isAuth, upload.single('image'), async (req, res) => {
-  const { id } = req.params;
-  const updateData = {
+  await new Product({
     name: req.body.name,
     price: req.body.price,
-    description: req.body.description
-  };
-  if (req.file) updateData.image = '/uploads/' + req.file.filename;
-  await Product.findByIdAndUpdate(id, updateData);
+    description: req.body.description,
+    image: '/uploads/' + req.file.filename
+  }).save();
   res.redirect('/admin');
 });
 
-// Delete Product
+app.post('/admin/update/:id', isAuth, upload.single('image'), async (req, res) => {
+  const update = { name: req.body.name, price: req.body.price, description: req.body.description };
+  if (req.file) update.image = '/uploads/' + req.file.filename;
+  await Product.findByIdAndUpdate(req.params.id, update);
+  res.redirect('/admin');
+});
+
 app.post('/admin/delete/:id', isAuth, async (req, res) => {
   await Product.findByIdAndDelete(req.params.id);
   res.redirect('/admin');
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Public Page: http://localhost:${PORT}`);
-  console.log(`Admin Login: http://localhost:${PORT}/login`);
+// Update Profile + Hero Background
+app.post('/admin/update-profile', isAuth, upload.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'heroBg', maxCount: 1 }
+]), async (req, res) => {
+  const update = {
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    address: req.body.address
+  };
+  if (req.files.photo) update.photo = '/uploads/' + req.files.photo[0].filename;
+  if (req.files.heroBg) update.heroBg = '/uploads/' + req.files.heroBg[0].filename;
+  await Owner.findOneAndUpdate({}, update, { upsert: true });
+  res.redirect('/admin');
+});
+
+app.listen(3000, () => {
+  console.log("LIVE → http://localhost:3000");
+  console.log("Login: Kaushal / kaushal123");
 });
