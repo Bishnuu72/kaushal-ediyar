@@ -9,6 +9,9 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected Successfully'))
   .catch(err => console.log(err));
 
+  const admin_username = process.env.ADMIN_USERNAME;
+  const admin_password = process.env.ADMIN_PASSWORD;
+
 // Owner Schema (now includes hero background)
 const ownerSchema = new mongoose.Schema({
   name: String,
@@ -34,9 +37,9 @@ Owner.findOne().then(async (owner) => {
   if (!owner) {
     await new Owner({
       name: "Kaushal Ediyar",
-      email: "kaushal.ediyar@gmail.com",
-      phone: "+91 98765 43210",
-      address: "Surat, Gujarat, India",
+      email: "kaushalediyar@gmail.com",
+      phone: "+977 9825388045",
+      address: "Ramdhuni-7, Nepal",
       photo: "https://i.ibb.co/0jY7Z7K/kaushal-photo.jpg"
     }).save();
     console.log("Default owner created");
@@ -70,7 +73,7 @@ app.get('/', async (req, res) => {
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', (req, res) => {
-  if (req.body.username === "Kaushal" && req.body.password === "kaushal123") {
+  if (req.body.username === "Kaushal" && req.body.password === {admin_password}) {
     req.session.isAuth = true;
     return res.redirect('/admin');
   }
