@@ -9,9 +9,6 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected Successfully'))
   .catch(err => console.log(err));
 
-  const admin_username = process.env.ADMIN_USERNAME;
-  const admin_password = process.env.ADMIN_PASSWORD;
-
 // Owner Schema (now includes hero background)
 const ownerSchema = new mongoose.Schema({
   name: String,
@@ -73,7 +70,7 @@ app.get('/', async (req, res) => {
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', (req, res) => {
-  if (req.body.username === "Kaushal" && req.body.password === {admin_password}) {
+  if (req.body.username === "Kaushal" && req.body.password === "kaushal123") {
     req.session.isAuth = true;
     return res.redirect('/admin');
   }
