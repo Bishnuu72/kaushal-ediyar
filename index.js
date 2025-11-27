@@ -3,64 +3,52 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const multer = require('multer');
-const path = require('path');
 const app = express();
 
-// === FIX: Prevent model overwrite on Vercel ===
-let Owner, Product;
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB Connected Successfully'))
+  .catch(err => console.log(err));
 
-async function connectDB() {
-  await mongoose.connect(process.env.MONGODB_URI);
-  console.log('MongoDB Connected');
+// Owner Schema (now includes hero background)
+const ownerSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  address: String,
+  photo: String,
+  heroBg: { type: String, default: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80" }
+});
+const Owner = mongoose.model('Owner', ownerSchema);
 
-  // Define models only if not already defined
-  if (!mongoose.models.Owner) {
-    const ownerSchema = new mongoose.Schema({
-      name: String,
-      email: String,
-      phone: String,
-      address: String,
-      photo: { type: String, default: "https://i.ibb.co/0jY7Z7K/kaushal-photo.jpg" },
-      heroBg: { type: String, default: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80" }
-    });
-    Owner = mongoose.model('Owner', ownerSchema);
-  } else {
-    Owner = mongoose.model('Owner');
-  }
+// Product Schema
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: Number,
+  description: String,
+  image: String
+});
+const Product = mongoose.model('Product', productSchema);
 
-  if (!mongoose.models.Product) {
-    const productSchema = new mongoose.Schema({
-      name: String,
-      price: Number,
-      description: String,
-      image: String
-    });
-    Product = mongoose.model('Product', productSchema);
-  } else {
-    Product = mongoose.model('Product');
-  }
-
-  // Create default owner if not exists
-  const owner = await Owner.findOne();
+// Create default owner if not exists
+Owner.findOne().then(async (owner) => {
   if (!owner) {
     await new Owner({
       name: "Kaushal Ediyar",
       email: "kaushal.ediyar@gmail.com",
       phone: "+91 98765 43210",
-      address: "Surat, Gujarat, India"
+      address: "Surat, Gujarat, India",
+      photo: "https://i.ibb.co/0jY7Z7K/kaushal-photo.jpg"
     }).save();
+    console.log("Default owner created");
   }
-}
+});
 
-connectDB();
-
-// Middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback_secret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -76,7 +64,7 @@ const isAuth = (req, res, next) => {
 // Routes
 app.get('/', async (req, res) => {
   const [products, owner] = await Promise.all([Product.find(), Owner.findOne()]);
-  res.render('public', { products, owner: owner || {} });
+  res.render('public', { products, owner });
 });
 
 app.get('/login', (req, res) => res.render('login', { error: null }));
@@ -86,16 +74,17 @@ app.post('/login', (req, res) => {
     req.session.isAuth = true;
     return res.redirect('/admin');
   }
-  res.render('login', { error: "Wrong credentials" });
+  res.render('login', { error: "Wrong username or password" });
 });
 
 app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
 
 app.get('/admin', isAuth, async (req, res) => {
   const [products, owner] = await Promise.all([Product.find(), Owner.findOne()]);
-  res.render('admin', { products, owner: owner || {} });
+  res.render('admin', { products, owner });
 });
 
+// CRUD Routes
 app.post('/admin/add', isAuth, upload.single('image'), async (req, res) => {
   await new Product({
     name: req.body.name,
@@ -118,6 +107,7 @@ app.post('/admin/delete/:id', isAuth, async (req, res) => {
   res.redirect('/admin');
 });
 
+// Update Profile + Hero Background
 app.post('/admin/update-profile', isAuth, upload.fields([
   { name: 'photo', maxCount: 1 },
   { name: 'heroBg', maxCount: 1 }
@@ -134,5 +124,8 @@ app.post('/admin/update-profile', isAuth, upload.fields([
   res.redirect('/admin');
 });
 
-// Vercel handler
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Visit: https://kaushal-ediyar.onrender.com`);
+});
