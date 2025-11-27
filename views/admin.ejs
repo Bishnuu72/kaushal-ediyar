@@ -3,62 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin - <%= owner.name %></title>
+  <title>Admin Panel - <%= owner.name %></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    body { background: linear-gradient(135deg, #f0f2f5, #e0e7ff); font-family: 'Poppins', sans-serif; min-height: 100vh; }
-    .navbar { background: linear-gradient(135deg, #667eea, #764ba2); }
-    .profile-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 25px; }
-    .profile-img { width: 160px; height: 160px; object-fit: cover; border: 8px solid rgba(255,255,255,0.3); }
-    .card { border-radius: 20px; overflow: hidden; transition: all 0.4s; cursor: grab; }
-    .card:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
-    .btn-gradient { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; }
-    .product-img { height: 240px; object-fit: cover; }
+    :root {
+      --cyan: #00d4ff;
+      --dark: #0a0a0a;
+      --glass: rgba(255, 255, 255, 0.08);
+      --border: rgba(0, 212, 255, 0.3);
+    }
+    body { 
+      font-family: 'Space Grotesk', sans-serif; 
+      background: #000; 
+      color: white;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(10, 10, 20, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+    }
+
+    .navbar .btn-outline-light {
+      border-color: var(--cyan) !important;
+      color: var(--cyan) !important;
+      font-weight: 600;
+    }
+    .navbar .btn-outline-light:hover {
+      background: var(--cyan);
+      color: black !important;
+    }
+
+    .profile-card, .card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0, 212, 255, 0.15);
+    }
+
+    .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      color: white;
+      border-radius: 18px;
+    }
+    .form-control:focus {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: var(--cyan);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+      color: white;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-weight: 600;
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.5);
+    }
+
+    .card {
+      transition: all 0.6s;
+    }
+    .card:hover {
+      transform: translateY(-20px);
+      box-shadow: 0 40px 100px rgba(0, 212, 255, 0.3);
+    }
+
+    .product-img { height: 280px; object-fit: cover; }
+    
+    .card-body {
+      background: rgba(10, 10, 20, 0.8);
+    }
+    
+    .card-title, .card-text, h3, h4 {
+      color: white !important;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .text-cyan { color: var(--cyan) !important; }
   </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-dark py-4 shadow-lg">
-    <div class="container d-flex justify-content-between">
-      <h2 class="fw-bold"><i class="bi bi-speedometer2"></i> Admin Panel</h2>
+  <nav class="navbar navbar-dark py-4">
+    <div class="container d-flex justify-content-between align-items-center">
+      <h2 class="fw-bold text-cyan"><i class="bi bi-shield-lock-fill"></i> ADMIN PANEL</h2>
       <div>
-        <span class="me-4 text-white fw-bold">Hello, <%= owner.name %></span>
-        <a href="/logout" class="btn btn-outline-light rounded-pill px-5">Logout</a>
+        <span class="me-4 text-cyan fw-bold">Hello, <%= owner.name %></span>
+        <a href="/logout" class="btn btn-outline-light rounded-pill px-5 fw-bold">LOGOUT</a>
       </div>
     </div>
   </nav>
 
   <div class="container my-5">
 
-    <!-- Update Profile -->
-    <div class="profile-card shadow-lg p-5 mb-5">
+    <!-- Profile Update -->
+    <div class="profile-card p-5 mb-5">
       <div class="row align-items-center">
         <div class="col-md-4 text-center">
-          <img src="<%= owner.photo %>" class="rounded-circle profile-img shadow-lg" alt="Profile">
+          <img src="<%= owner.photo %>" class="rounded-circle shadow-lg" style="width:180px;height:180px;object-fit:cover;border:5px solid var(--cyan);">
+          <h4 class="mt-3 text-cyan fw-bold">Public Profile</h4>
         </div>
         <div class="col-md-8">
-          <h3 class="fw-bold mb-4">Update Profile & Hero Background</h3>
+          <h3 class="fw-bold text-cyan mb-4">Update Profile & Hero Background</h3>
           <form method="POST" action="/admin/update-profile" enctype="multipart/form-data" class="row g-4">
             <div class="col-md-6"><input name="name" value="<%= owner.name %>" class="form-control form-control-lg" required></div>
-            <div class="col-md-6"><input name="tagline" value="<%= owner.tagline %>" class="form-control form-control-lg" placeholder="Tagline (e.g. Distributor of Azul Products)"></div>
+            <div class="col-md-6"><input name="tagline" value="<%= owner.tagline %>" class="form-control form-control-lg" placeholder="Tagline"></div>
             <div class="col-md-6"><input name="email" value="<%= owner.email %>" class="form-control form-control-lg" required></div>
             <div class="col-md-6"><input name="phone" value="<%= owner.phone %>" class="form-control form-control-lg" required></div>
             <div class="col-12"><input name="address" value="<%= owner.address %>" class="form-control form-control-lg" required></div>
             <div class="col-md-6">
-              <label class="text-white fw-bold">Profile Photo</label>
-              <input type="file" name="photo" class="form-control form-control-lg" accept="image/*">
+              <label class="text-cyan fw-bold">Profile Photo</label>
+              <input type="file" name="photo" class="form-control form-control-lg">
             </div>
             <div class="col-md-6">
-              <label class="text-white fw-bold">Hero Background</label>
-              <input type="file" name="heroBg" class="form-control form-control-lg" accept="image/*">
-              <img src="<%= owner.heroBg %>" class="img-fluid rounded mt-2" style="max-height:150px;">
+              <label class="text-cyan fw-bold">Hero Background</label>
+              <input type="file" name="heroBg" class="form-control form-control-lg">
             </div>
             <div class="col-12">
-              <button class="btn btn-light btn-lg px-5 rounded-pill shadow">
-                <i class="bi bi-check-circle-fill"></i> Update Everything
+              <button class="btn btn-primary btn-lg px-5 rounded-pill shadow-lg">
+                <i class="bi bi-check-circle-fill"></i> UPDATE EVERYTHING
               </button>
             </div>
           </form>
@@ -67,60 +139,40 @@
     </div>
 
     <!-- Add Product -->
-    <div class="card shadow-lg p-5 mb-5">
-      <h3 class="text-primary fw-bold mb-4">Add New Product</h3>
+    <div class="card p-5 mb-5">
+      <h3 class="text-cyan fw-bold mb-4">Add New Product</h3>
       <form method="POST" action="/admin/add" enctype="multipart/form-data" class="row g-4">
         <div class="col-md-6"><input name="name" class="form-control form-control-lg" placeholder="Product Name" required></div>
         <div class="col-md-6"><input name="price" type="number" step="0.01" class="form-control form-control-lg" placeholder="Price (Rs)" required></div>
         <div class="col-12"><textarea name="description" rows="4" class="form-control form-control-lg" placeholder="Description" required></textarea></div>
         <div class="col-12"><input type="file" name="image" class="form-control form-control-lg" accept="image/*" required></div>
         <div class="col-12">
-          <button class="btn btn-gradient btn-lg px-5 rounded-pill shadow">
-            <i class="bi bi-cloud-upload"></i> Publish Product
+          <button class="btn btn-primary btn-lg px-5 rounded-pill shadow-lg">
+            <i class="bi bi-cloud-upload"></i> PUBLISH PRODUCT
           </button>
         </div>
       </form>
     </div>
 
-    <!-- Products (Drag to Reorder) -->
-    <h3 class="text-primary fw-bold mb-4">Products (<%= products.length %>) — Drag to Reorder</h3>
+    <!-- Products - Drag to Reorder -->
+    <h3 class="text-cyan fw-bold mb-4">Products (<%= products.length %>) — Drag to Reorder</h3>
     <div class="row g-5">
       <% products.forEach(p => { %>
         <div class="col-md-6 col-lg-4" data-id="<%= p._id %>">
-          <div class="card h-100 shadow-lg">
+          <div class="card h-100">
             <img src="<%= p.image %>" class="product-img card-img-top">
-            <div class="card-body d-flex flex-column p-4">
-              <h5 class="fw-bold text-primary"><%= p.name %></h5>
-              <p class="text-muted flex-grow-1"><%= p.description %></p>
-              <h4 class="text-success fw-bold">Rs <%= Number(p.price).toFixed(2) %></h4>
-              <div class="mt-3 d-grid gap-2">
-                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit<%= p._id %>">Edit</button>
+            <div class="card-body text-center p-5">
+              <h4 class="card-title fw-bold text-cyan"><%= p.name %></h4>
+              <p class="card-text text-white fs-5"><%= p.description %></p>
+              <h3 class="text-cyan fw-bold">Rs <%= Number(p.price).toFixed(2) %></h3>
+              <div class="mt-4 d-grid gap-2">
+                <button class="btn btn-outline-cyan rounded-pill" data-bs-toggle="modal" data-bs-target="#edit<%= p._id %>">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </button>
                 <form method="POST" action="/admin/delete/<%= p._id %>" class="d-inline">
-                  <button type="submit" class="btn btn-danger" onclick="return confirm('Delete forever?')">Delete</button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- Edit Modal -->
-          <div class="modal fade" id="edit<%= p._id %>">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <form method="POST" action="/admin/update/<%= p._id %>" enctype="multipart/form-data">
-                  <div class="modal-header bg-primary text-white">
-                    <h5>Edit Product</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <input name="name" value="<%= p.name %>" class="form-control mb-3" required>
-                    <input name="price" value="<%= p.price %>" type="number" step="0.01" class="form-control mb-3" required>
-                    <textarea name="description" rows="4" class="form-control mb-3"><%= p.description %></textarea>
-                    <input type="file" name="image" class="form-control" accept="image/*">
-                    <img src="<%= p.image %>" width="200" class="mt-3 rounded">
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-gradient">Update</button>
-                  </div>
+                  <button type="submit" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Delete forever?')">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
                 </form>
               </div>
             </div>
@@ -132,15 +184,17 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    new Sortable(document.querySelector('.row.g-5'), {
+    // DRAG & DROP REORDER - SAVES TO DATABASE
+    const sortable = new Sortable(document.querySelector('.row.g-5'), {
       animation: 350,
-      onEnd: async () => {
+      onEnd: async function () {
         const order = Array.from(document.querySelectorAll('[data-id]')).map(el => el.dataset.id);
         await fetch('/admin/reorder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ order })
         });
+        console.log("Order saved!");
       }
     });
   </script>
